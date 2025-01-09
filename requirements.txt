@@ -9,3 +9,4 @@ pillow==11.0.0
 tqdm==4.67.1
 polars==1.16.0
 sqlalchemy==2.0.36
+pymongo==4.10.1
