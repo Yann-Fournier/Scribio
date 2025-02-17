@@ -50,47 +50,8 @@ def format_image(chemin: str) -> np.ndarray:
 #%%
 import boto3
 
-def get_immage_from_bucket(characters):
-    s3 = boto3.client('s3')
 
-    if characters.isupper():
-        bucket_name = 'scribio1'
-    elif characters.islower():
-        bucket_name = 'scribio2'
-    elif characters.isdigit():
-        bucket_name = 'scribio3'
-    else:
-        raise ValueError('Invalid character')
-    
-    folder = f"validation/{characters}"
 
-    response = s3.list_objects_v2(Bucket=bucket_name, Prefix=folder)
-
-    if 'Contents' in response:
-        print(f"Fichier trouvés pour le caracteres {characters} dans le bucket {bucket_name}")
-        for obj in response['Contents']:
-            print(f" -{obj['Key']}")
-    else:
-        print(f"Aucun fichier trouvé pour le caractère {characters} dans le bucket {bucket_name}")
-
-get_immage_from_bucket('A')
-get_immage_from_bucket('5')
-
-# Parcours des dossiers et sous-dossiers pour récupérer les chemins de toutes les photos (recursion)
-#def recup_chemin(chemin: str) -> None:
-    #"""Summary ______________________________________________________________
-
-    #Args:
-        #chemin (str): chemin du dataset
-    #"""
-    #dossiers = [f for f in os.listdir(chemin) if os.path.isdir(os.path.join(chemin, f))]
-    #if len(dossiers) == 0: # Si aucun dossier n'est trouvé, on est dans le cas de base
-        #fichiers_png = [os.path.join(chemin, f) for f in os.listdir(chemin) if f.endswith('.png')] # on #recupère et stocke les fichiers .png
-        #CHEMAIN.extend(fichiers_png) # on ajoute les chemins des fichiers .png dans une liste
-    #else : # Sinon, on continue de parcourir les dossiers
-        #for dossier in dossiers:
-            #recup_chemin(os.path.join(chemin, dossier))
-#%%
 s3 = boto3.client('s3')
 
 # Liste des buckets à parcourir
