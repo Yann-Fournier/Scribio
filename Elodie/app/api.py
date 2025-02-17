@@ -245,5 +245,9 @@ async def predict(request: Request):
 
     print("Label :", json_result["Label"])
     print("Prediction :", json_result["Prediction"])
+    print(f"Prédictions du type Nbr : ",json_result["Nbr"])
+    print(f"Prédictions du type Min : ",json_result["Min"])
+    print(f"Prédictions du type Maj : ",json_result["Maj"])
+
     
     return {"Label": json_result["Label"], "Prediction": json_result["Prediction"]}

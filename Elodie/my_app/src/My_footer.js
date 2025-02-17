@@ -1,16 +1,12 @@
-import React, { useState, useEffect } from "react";
-import './css/My_footer.css';
+import React from "react";
+import "./css/My_footer.css";
 
 const My_footer = () => {
-
-    return (
-        <di>
-            <div className="my_footer">
-                <h1> Footer </h1>
-            </div>
-        </di>
-    );
-
+  return (
+    <footer className="my-footer">
+      <p>&copy; {new Date().getFullYear()} Scribio. Tous droits réservés.</p>
+    </footer>
+  );
 };
 
 export default My_footer;
