@@ -14,10 +14,10 @@ NBR = {0: '0', 1: '1', 2: '2', 3: '3', 4: '4', 5: '5', 6: '6', 7: '7', 8: '8', 9
 CHEMAIN = []
 
 # Chargement des modèles sauvegardés
-model_type = tf.keras.models.load_model("../models/Get_type_v4_b32_e10.keras")
-model_maj = tf.keras.models.load_model("../models/Get_Maj_v4_b32_e10.keras")
-model_min = tf.keras.models.load_model("../models/Get_Min_v4_b32_e10.keras")
-model_nbr = tf.keras.models.load_model("../models/Get_Nbr_v4_b32_e10.keras")
+model_type = tf.keras.models.load_model("../Yann/models/Get_type_v4_b32_e10.keras")
+model_maj = tf.keras.models.load_model("../Yann/models/Get_Maj_v4_b32_e10.keras")
+model_min = tf.keras.models.load_model("../Yann/models/Get_Min_v4_b32_e10.keras")
+model_nbr = tf.keras.models.load_model("../Yann/models/Get_Nbr_v4_b32_e10.keras")
 #%%
 def format_image(chemin: str) -> np.ndarray:
     """_summary_
@@ -47,7 +47,6 @@ def format_image(chemin: str) -> np.ndarray:
     tab_numpy_flatten = tab_numpy.flatten() # Transformation en tableau 1D
     
     return tab_numpy_flatten # Retourner le tableau de pixels
-#%%
 import boto3
 
 
