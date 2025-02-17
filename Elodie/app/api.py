@@ -11,6 +11,7 @@ import numpy as np # linear algebra
 from PIL import Image # image processing
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Request
+from awscli.customizations.s3.utils import relative_path
 
 app = FastAPI()
 
@@ -77,21 +78,74 @@ def format_image(chemin: str) -> np.ndarray:
     return tab_numpy_flatten # Retourner le tableau de pixels
 # Fonction principale pour prédire l'image
 
+import boto3
+
+s3 = boto3.client('s3')
+
+# Liste des buckets à parcourir
+buckets = ['scribio1', 'scribio2', 'scribio3']
+#buckets = ['test354680'] ###Test avec un seul bucket qui contient que des majuscules et tres peux de fichiers
+local_folder ={
+    'majuscules': '../../Majuscules',
+    'minuscules': '../../Minuscules',
+    'digits': '../../Digits'
+}
+for folder in local_folder.values():
+    os.makedirs(folder, exist_ok=True)
+    
+CHEMIN = []
+
+def download_from_s3(s3_path: str, prefix: str = '') -> None:
+    response = s3.list_objects_v2(Bucket=bucket, Prefix=prefix, Delimiter='/')
+    
+    if 'Contents' in response:
+        for obj in response['Contents']:
+            key = obj['Key']
+            if key.lower().endswith('.png'):
+                file_name = os.path.basename(key)
+                relative_path = os.path.dirname(key)
+                parent_folder = os.path.basename(relative_path)
+                category =None 
+                
+                if parent_folder.isupper():
+                    category = 'majuscules'
+                elif parent_folder.islower():
+                    category = 'minuscules'
+                elif parent_folder.isdigit():
+                    category = 'digits'
+            
+                if category:
+                    local_subfolder = os.path.join(local_folder[category], relative_path)
+                    os.makedirs(local_subfolder, exist_ok=True)
+                    local_path = os.path.join(local_subfolder, file_name)
+                    s3.download_file(bucket, key, local_path)
+                    CHEMIN.append(local_path)
+    if 'CommonPrefixes' in response:
+        for folder in response['CommonPrefixes']:
+            download_from_s3(bucket, folder['Prefix'])
+
+for bucket in buckets:
+    print(f"Downloading from bucket {bucket} ...")
+    download_from_s3(bucket)
+
+print("Chemins des fichiers téléchargés :")
+for chemin in CHEMIN:
+    print(chemin)
 
 # Parcours des dossiers et sous-dossiers pour récupérer les chemins de toutes les photos (recursion)
-def recup_chemin(chemin: str) -> None:
-    """Summary ______________________________________________________________
+# def recup_chemin(chemin: str) -> None:
+#     """Summary ______________________________________________________________
 
-    Args:
-        chemin (str): chemin du dataset
-    """
-    dossiers = [f for f in os.listdir(chemin) if os.path.isdir(os.path.join(chemin, f))]
-    if len(dossiers) == 0: # Si aucun dossier n'est trouvé, on est dans le cas de base
-        fichiers_png = [os.path.join(chemin, f) for f in os.listdir(chemin) if f.endswith('.png')] # on recupère et stocke les fichiers .png
-        CHEMAIN.extend(fichiers_png) # on ajoute les chemins des fichiers .png dans une liste
-    else : # Sinon, on continue de parcourir les dossiers
-        for dossier in dossiers:
-            recup_chemin(os.path.join(chemin, dossier))
+#     Args:
+#         chemin (str): chemin du dataset
+#     """
+#     dossiers = [f for f in os.listdir(chemin) if os.path.isdir(os.path.join(chemin, f))]
+#     if len(dossiers) == 0: # Si aucun dossier n'est trouvé, on est dans le cas de base
+#         fichiers_png = [os.path.join(chemin, f) for f in os.listdir(chemin) if f.endswith('.png')] # on recupère et stocke les fichiers .png
+#         CHEMAIN.extend(fichiers_png) # on ajoute les chemins des fichiers .png dans une liste
+#     else : # Sinon, on continue de parcourir les dossiers
+#         for dossier in dossiers:
+#             recup_chemin(os.path.join(chemin, dossier))
 
 def predict_image(chemin: str) -> json:
     """_summary_
@@ -104,7 +158,9 @@ def predict_image(chemin: str) -> json:
     """
     image_pixel = format_image(chemin) # Récupération des pixels de l'image
     image_pixel1d = image_pixel.reshape(1, 625) # Transformation en tableau 2D
+
     chemin_split = chemin.split("\\") # Split du chemin pour recupérer les informations
+    label = chemin_split[-2] if len(chemin_split) > 1 else "Inconnu"  # Le dossier parent est à l'avant-dernière position
     
     # Prédiction des différents modèles
     predictions_type = model_type.predict(image_pixel1d)
@@ -143,7 +199,7 @@ def predict_image(chemin: str) -> json:
     # JSON de retour pour l'API
     json_retour_api = {
         "Image": chemin,
-        "Label": chemin_split[3],
+        "Label": label,
         "Prediction": "",
         "Maj": float(predictions_type[0][0]),
         "Min": float(predictions_type[0][1]),
@@ -236,7 +292,7 @@ def predict_image(chemin: str) -> json:
 @app.on_event("startup")  # Charge les chemins au démarrage du serveur
 def load_images():
     global CHEMAIN
-    recup_chemin("../../Dataset")
+    download_from_s3(bucket)
     print(f"✅ {len(CHEMAIN)} images trouvées !")
 
 
@@ -248,14 +304,15 @@ async def predict(request: Request):
     if not CHEMAIN:
         return {"error": "Aucune image trouvée dans le dataset."}
 
-    random_image = np.random.choice(CHEMAIN)
-    json_result = predict_image(random_image)
+    # random_image = np.random.choice(CHEMAIN)
+    # json_result = predict_image(random_image)
 
-    print("Label :", json_result["Label"])
-    print("Prediction :", json_result["Prediction"])
-    print("Image chemin", json_result["Image"])
+    fichier_aleatoire = np.random.choice(CHEMIN)
+    print(f"Fichier sélectionné au hasard : {fichier_aleatoire}")
 
-    print(json_result)
+
+    json = predict_image(fichier_aleatoire)
+
     # Retourner également l'URL du chemin de l'image
 
-    return json_result
+    return json
