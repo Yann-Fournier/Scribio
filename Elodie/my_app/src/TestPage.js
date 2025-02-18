@@ -142,11 +142,11 @@ const TestPage = () => {
                 <td style={cellStyle}>{item.Label}</td>
                 <td style={cellStyle}>{item.Prediction}</td>
                 <td style={cellStyle}>
-                  <img
-                    src={item.Image}
-                    alt={`Image de prédiction ${item.Label}`}
-                    style={{ width: "100px", height: "100px", objectFit: "cover" }}
-                  />
+                <img
+                  src={item.Image.replace(/\\/g, "/")} // Remplacez les \ par /
+                  alt={`Image de prédiction ${item.Image}`}
+                  style={{ width: "100px", height: "100px", objectFit: "cover" }}
+                />
                 </td>
                 <td style={cellStyle}>{item.Maj}</td>
                 <td style={cellStyle}>{item.Min}</td>
