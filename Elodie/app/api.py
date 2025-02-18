@@ -25,7 +25,7 @@ app.add_middleware(
 )
 
 # Chargement des modèles
-model_type = tf.keras.models.load_model("../../Yann/models/Get_Nbr_v4_b32_e10.keras")
+model_type = tf.keras.models.load_model("../../Yann/models/Get_Type_v4_b32_e10.keras")
 model_maj = tf.keras.models.load_model("../../Yann/models/Get_Maj_v4_b32_e10.keras")
 model_min = tf.keras.models.load_model("../../Yann/models/Get_Min_v4_b32_e10.keras")
 model_nbr = tf.keras.models.load_model("../../Yann/models/Get_Nbr_v4_b32_e10.keras")
@@ -42,6 +42,11 @@ CHEMAIN = []
 #     image_path: str  # Le chemin de l'image
 
 # Fonction pour traiter l'image
+from fastapi.staticfiles import StaticFiles
+
+# Monter le dossier Dataset comme serveur de fichiers statiques
+app.mount("/static", StaticFiles(directory="../../Dataset"), name="static")
+
 def format_image(chemin: str) -> np.ndarray:
     """_summary_
 
@@ -107,6 +112,7 @@ def predict_image(chemin: str) -> json:
     predictions_min = model_min.predict(image_pixel1d)
     predictions_nbr = model_nbr.predict(image_pixel1d)
     
+    print(predictions_type)
     # Get max value of predictions
     max_type = max(predictions_type[0]) # Type
     max_maj = max(predictions_maj[0]) # Maj
@@ -121,7 +127,8 @@ def predict_image(chemin: str) -> json:
     }
     
     # Get label type
-    type_img = TYPE[tf.argmax(predictions_type, axis=1).numpy()[0]] # label type
+ 
+    type_img = TYPE[int(tf.argmax(predictions_type, axis=1).numpy()[0])] # label type
     
     # Get label forme
     maximum_forme = max(max_maj, max_min, max_nbr) # probabilité forme
@@ -138,72 +145,73 @@ def predict_image(chemin: str) -> json:
         "Image": chemin,
         "Label": chemin_split[3],
         "Prediction": "",
-        "Maj": predictions_type[0][0],
-        "Min": predictions_type[0][1],
-        "Nbr": predictions_type[0][2],
-        "A": predictions_maj[0][0],
-        "B": predictions_maj[0][1],
-        "C": predictions_maj[0][2],
-        "D": predictions_maj[0][3],
-        "E": predictions_maj[0][4],
-        "F": predictions_maj[0][5],
-        "G": predictions_maj[0][6],
-        "H": predictions_maj[0][7],
-        "I": predictions_maj[0][8],
-        "J": predictions_maj[0][9],
-        "K": predictions_maj[0][10],
-        "L": predictions_maj[0][11],
-        "M": predictions_maj[0][12],
-        "N": predictions_maj[0][13],
-        "O": predictions_maj[0][14],
-        "P": predictions_maj[0][15],
-        "Q": predictions_maj[0][16],
-        "R": predictions_maj[0][17],
-        "S": predictions_maj[0][18],
-        "T": predictions_maj[0][19],
-        "U": predictions_maj[0][20],
-        "V": predictions_maj[0][21],
-        "W": predictions_maj[0][22],
-        "X": predictions_maj[0][23],
-        "Y": predictions_maj[0][24],
-        "Z": predictions_maj[0][25],
-        "a": predictions_min[0][0],
-        "b": predictions_min[0][1],
-        "c": predictions_min[0][2],
-        "d": predictions_min[0][3],
-        "e": predictions_min[0][4],
-        "f": predictions_min[0][5],
-        "g": predictions_min[0][6],
-        "h": predictions_min[0][7],
-        "i": predictions_min[0][8],
-        "j": predictions_min[0][9],
-        "k": predictions_min[0][10],
-        "l": predictions_min[0][11],
-        "m": predictions_min[0][12],
-        "n": predictions_min[0][13],
-        "o": predictions_min[0][14],
-        "p": predictions_min[0][15],
-        "q": predictions_min[0][16],
-        "r": predictions_min[0][17],
-        "s": predictions_min[0][18],
-        "t": predictions_min[0][19],
-        "u": predictions_min[0][20],
-        "v": predictions_min[0][21],
-        "w": predictions_min[0][22],
-        "x": predictions_min[0][23],
-        "y": predictions_min[0][24],
-        "z": predictions_min[0][25],
-        "0": predictions_nbr[0][0],
-        "1": predictions_nbr[0][1],
-        "2": predictions_nbr[0][2],
-        "3": predictions_nbr[0][3],
-        "4": predictions_nbr[0][4],
-        "5": predictions_nbr[0][5],
-        "6": predictions_nbr[0][6],
-        "7": predictions_nbr[0][7],
-        "8": predictions_nbr[0][8],
-        "9": predictions_nbr[0][9]
+        "Maj": float(predictions_type[0][0]),
+        "Min": float(predictions_type[0][1]),
+        "Nbr": float(predictions_type[0][2]),
+        "A": float(predictions_maj[0][0]),
+        "B": float(predictions_maj[0][1]),
+        "C": float(predictions_maj[0][2]),
+        "D": float(predictions_maj[0][3]),
+        "E": float(predictions_maj[0][4]),
+        "F": float(predictions_maj[0][5]),
+        "G": float(predictions_maj[0][6]),
+        "H": float(predictions_maj[0][7]),
+        "I": float(predictions_maj[0][8]),
+        "J": float(predictions_maj[0][9]),
+        "K": float(predictions_maj[0][10]),
+        "L": float(predictions_maj[0][11]),
+        "M": float(predictions_maj[0][12]),
+        "N": float(predictions_maj[0][13]),
+        "O": float(predictions_maj[0][14]),
+        "P": float(predictions_maj[0][15]),
+        "Q": float(predictions_maj[0][16]),
+        "R": float(predictions_maj[0][17]),
+        "S": float(predictions_maj[0][18]),
+        "T": float(predictions_maj[0][19]),
+        "U": float(predictions_maj[0][20]),
+        "V": float(predictions_maj[0][21]),
+        "W": float(predictions_maj[0][22]),
+        "X": float(predictions_maj[0][23]),
+        "Y": float(predictions_maj[0][24]),
+        "Z": float(predictions_maj[0][25]),
+        "a": float(predictions_min[0][0]),
+        "b": float(predictions_min[0][1]),
+        "c": float(predictions_min[0][2]),
+        "d": float(predictions_min[0][3]),
+        "e": float(predictions_min[0][4]),
+        "f": float(predictions_min[0][5]),
+        "g": float(predictions_min[0][6]),
+        "h": float(predictions_min[0][7]),
+        "i": float(predictions_min[0][8]),
+        "j": float(predictions_min[0][9]),
+        "k": float(predictions_min[0][10]),
+        "l": float(predictions_min[0][11]),
+        "m": float(predictions_min[0][12]),
+        "n": float(predictions_min[0][13]),
+        "o": float(predictions_min[0][14]),
+        "p": float(predictions_min[0][15]),
+        "q": float(predictions_min[0][16]),
+        "r": float(predictions_min[0][17]),
+        "s": float(predictions_min[0][18]),
+        "t": float(predictions_min[0][19]),
+        "u": float(predictions_min[0][20]),
+        "v": float(predictions_min[0][21]),
+        "w": float(predictions_min[0][22]),
+        "x": float(predictions_min[0][23]),
+        "y": float(predictions_min[0][24]),
+        "z": float(predictions_min[0][25]),
+        "0": float(predictions_nbr[0][0]),
+        "1": float(predictions_nbr[0][1]),
+        "2": float(predictions_nbr[0][2]),
+        "3": float(predictions_nbr[0][3]),
+        "4": float(predictions_nbr[0][4]),
+        "5": float(predictions_nbr[0][5]),
+        "6": float(predictions_nbr[0][6]),
+        "7": float(predictions_nbr[0][7]),
+        "8": float(predictions_nbr[0][8]),
+        "9": float(predictions_nbr[0][9])
     }
+
     # Choix de la prédiction finale 
     if type_img != forme:
         max_max_max = max(max_type, maximum_forme)
@@ -245,9 +253,9 @@ async def predict(request: Request):
 
     print("Label :", json_result["Label"])
     print("Prediction :", json_result["Prediction"])
-    print(f"Prédictions du type Nbr : ",json_result["Nbr"])
-    print(f"Prédictions du type Min : ",json_result["Min"])
-    print(f"Prédictions du type Maj : ",json_result["Maj"])
+    print("Image chemin", json_result["Image"])
 
-    
-    return {"Label": json_result["Label"], "Prediction": json_result["Prediction"]}
+    print(json_result)
+    # Retourner également l'URL du chemin de l'image
+
+    return json_result
